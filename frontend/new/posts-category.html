@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Category Details (all posts against one category)</title>
+  <link rel="stylesheet" href="./CSS/home.css" />
+  <style>
+    body {
+      color: black;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+    }
+    .category-header {
+      text-align: center;
+      margin-top: 30px;
+      padding: 0 10px;
+    }
+    .art-posts {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin: 40px 20px;
+      min-height: 200px;
+    }
+    .art-post {
+      position: relative;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      transition: transform 0.3s ease;
+      background: #f9f9f9;
+    }
+    .art-post:hover {
+      transform: scale(1.05);
+    }
+    .art-post img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 15px 15px 0 0;
+    }
+    .art-post h3 {
+      position: absolute;
+      bottom: 0;
+      margin: 0;
+      width: 100%;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      font-size: 1rem;
+      z-index: 1;
+      border-radius: 0 0 15px 15px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    /* Different shape styles */
+    .square {
+      width: 250px;
+      height: 250px;
+    }
+    .horizontal-rectangle {
+      width: 350px;
+      height: 200px;
+    }
+    .vertical-rectangle {
+      width: 200px;
+      height: 350px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+      .square,
+      .horizontal-rectangle,
+      .vertical-rectangle {
+        width: 45vw;
+        height: auto;
+        aspect-ratio: 1 / 1;
+      }
+      .horizontal-rectangle {
+        aspect-ratio: 16 / 9;
+      }
+      .vertical-rectangle {
+        aspect-ratio: 9 / 16;
+      }
+    }
+
+    /* Heart button styles */
+    .heart-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 2;
+      outline: none;
+      transition: transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .heart-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .heart-icon {
+      width: 28px;
+      height: 28px;
+      fill: #e60b99d2;
+      transition: fill 0.3s ease;
+      filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+    }
+    .heart-btn.liked .heart-icon {
+      fill: #e0245e;
+      stroke: #ff69b4;
+      stroke-width: 2px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      animation: pulse 0.6s ease forwards;
+      filter: drop-shadow(0 0 5px #e0245e);
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px #e0245e);
+      }
+      50% {
+        transform: scale(1.3);
+        filter: drop-shadow(0 0 10px #e0245e);
+      }
+      100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px #e0245e);
+      }
+    }
+
+    /* Loading spinner styles */
+    .loading {
+      font-size: 1.2rem;
+      color: #555;
+      text-align: center;
+      width: 100%;
+      margin-top: 60px;
+    }
+
+    .error-message, .empty-message {
+      font-size: 1.1rem;
+      color: #c00;
+      text-align: center;
+      margin-top: 60px;
+    }
+  </style>
+</head>
+<body>
+  <div class="category-header">
+    <h1 id="categoryTitle">Loading...</h1>
+  </div>
+
+  <div class="art-posts" id="postsContainer">
+    <p class="loading">Loading posts...</p>
+  </div>
+
+  <script>
+    // const accessToken = localStorage.getItem("accessToken");x
+    document.addEventListener("DOMContentLoaded", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const categoryId = urlParams.get('id');
+
+      // Get token dynamically from localStorage (adjust as needed)
+      const token = localStorage.getItem('accessToken');
+      
+      if (!categoryId) {
+        document.getElementById("categoryTitle").innerText = "Invalid Category ID";
+        document.getElementById('postsContainer').innerHTML = '<p class="error-message">No category specified.</p>';
+        return;
+      }
+      if (!token) {
+        document.getElementById("categoryTitle").innerText = "Authorization required";
+        document.getElementById('postsContainer').innerHTML = '<p class="error-message">Please log in to view this content.</p>';
+        return;
+      }
+
+      try {
+        // Fetch category details
+        const categoryRes = await fetch(`http://127.0.0.1:1199/api/v1/category/get-one-category/${categoryId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!categoryRes.ok) throw new Error("Failed to load category info");
+        const categoryData = await categoryRes.json();
+        document.getElementById("categoryTitle").innerText = categoryData.data?.categoryName || "Category";
+
+        // Fetch posts for category
+        const postsRes = await fetch(`http://127.0.0.1:1199/api/v1/post/get-posts-by-category/${categoryId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!postsRes.ok) throw new Error("Failed to load posts");
+        const posts = await postsRes.json();
+
+        const container = document.getElementById('postsContainer');
+        container.innerHTML = "";  // Clear loading spinner
+
+        if (!posts.data || posts.data.length === 0) {
+          container.innerHTML = '<p class="empty-message">No posts available in this category.</p>';
+          return;
+        }
+
+        // Cycle through shape classes: square, horizontal, vertical
+        const shapeClasses = ['square', 'horizontal-rectangle', 'vertical-rectangle'];
+
+        posts.data.forEach((post, index) => {
+          const shapeClass = shapeClasses[index % shapeClasses.length];
+
+          const postEl = document.createElement('article');
+          postEl.className = `art-post ${shapeClass}`;
+          postEl.innerHTML = `
+            <img src="${post.file || '/placeholder.jpg'}" alt="Post: ${post.caption || 'No caption'}" />
+            <h3 title="${post.caption || ''}">${post.caption || 'Untitled'}</h3>
+            <button class="heart-btn" aria-label="Like post" title="Like" data-post-id="${post._id}">
+              <svg class="heart-icon" viewBox="0 0 24 24" >
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42
+                3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3
+                19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+            </button>
+          `;
+          container.appendChild(postEl);
+        });
+
+        // Add event listeners to heart buttons for toggling like AND calling API
+        container.querySelectorAll('.heart-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const postId = btn.getAttribute('data-post-id');
+            btn.disabled = true; // prevent rapid clicks
+
+            try {
+              const response = await fetch(`http://127.0.0.1:1199/api/v1/favorite/add-remove-favorite/${postId}`, {
+                method: 'GET', // Use POST for toggling favorite (adjust if needed)
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+
+              const result = await response.json();
+
+              if (response.ok) {
+                btn.classList.toggle('liked');
+              } else {
+                alert(`Failed to update favorite: ${result.message || 'Unknown error'}`);
+              }
+            } catch (error) {
+              console.error('Error updating favorite:', error);
+              alert('Error updating favorite. Try again later.');
+            } finally {
+              btn.disabled = false;
+            }
+          });
+        });
+
+      } catch (error) {
+        console.error("Error fetching category or posts:", error);
+        document.getElementById("categoryTitle").innerText = "Error loading category";
+        document.getElementById('postsContainer').innerHTML = `<p class="error-message">${error.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

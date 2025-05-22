@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Your Favorites - Artify</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      padding-top: 20px;
+      color: #333;
+    }
+
+    .favorite-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 30px;
+    }
+
+    .favorite-card {
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      position: relative;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .favorite-card.square {
+      width: 250px;
+      height: 250px;
+    }
+
+    .favorite-card.horizontal {
+      width: 350px;
+      height: 200px;
+    }
+
+    .favorite-card.vertical {
+      width: 200px;
+      height: 350px;
+    }
+
+    .favorite-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .favorite-card h3 {
+      position: absolute;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      width: 100%;
+      margin: 0;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      position: relative;
+      width: 600px;
+      height: 600px;
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .modal-content img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      z-index: 10000;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Your Favorites</h1>
+  <div class="favorite-container" id="favoritesContainer"></div>
+
+  <!-- Modal -->
+  <div class="modal" id="imageModal">
+    <span class="close-button" id="closeModal">&times;</span>
+    <div class="modal-content">
+      <img id="modalImage" src="" alt="Enlarged image" />
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Get token from localStorage
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert("You must be logged in to view your favorites.");
+        return;
+      }
+
+      fetch("http://127.0.0.1:1199/api/v1/favorite/my-favorites", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+      .then(response => response.json())
+      .then(result => {
+        const container = document.getElementById("favoritesContainer");
+
+        if (!result.data || result.data.length === 0) {
+          container.innerHTML = "<p>No favorites found.</p>";
+          return;
+        }
+
+        const styles = ["square", "horizontal", "vertical"];
+
+        result.data.forEach(favorite => {
+          const post = favorite.post;
+          if (!post) return;
+
+          const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+
+          const card = document.createElement("div");
+          card.className = `favorite-card ${randomStyle}`;
+
+          card.innerHTML = `
+            <img src="${post.file || '/placeholder.jpg'}" alt="${post.caption || 'No caption'}" />
+            <h3>${post.caption || 'No caption'}</h3>
+          `;
+
+          // Click to enlarge functionality
+          card.querySelector("img").addEventListener("click", (e) => {
+            const modal = document.getElementById("imageModal");
+            const modalImage = document.getElementById("modalImage");
+            modalImage.src = e.target.src;
+            modal.style.display = "flex";
+          });
+
+          container.appendChild(card);
+        });
+      })
+      .catch(error => {
+        console.error("Error fetching favorites:", error);
+      });
+
+      // Close modal
+      document.getElementById("closeModal").addEventListener("click", () => {
+        document.getElementById("imageModal").style.display = "none";
+      });
+
+      // Close when clicking outside modal content
+      document.getElementById("imageModal").addEventListener("click", (e) => {
+        if (e.target === document.getElementById("imageModal")) {
+          document.getElementById("imageModal").style.display = "none";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

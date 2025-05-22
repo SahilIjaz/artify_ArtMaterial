@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Artify Signup</title>
+  <link rel="stylesheet" href="signup.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">Artify</h1>
+
+    <!-- Signup Form -->
+    <div class="form-box" id="signup-box">
+      <h2>Create Account</h2>
+      <form id="signup-form">
+        <input type="text" id="name" placeholder="name" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Sign Up</button>
+      </form>
+      <p class="switch-link">Already have an account? <a href="login.html">Login</a></p>
+    </div>
+
+    <!-- OTP Form -->
+    <div class="form-box" id="otp-box" style="display: none;">
+      <h2>Enter OTP</h2>
+      <p class="otp-info">We've sent a 6-digit OTP to your email.</p>
+      <form id="otp-form">
+        <input type="email" id="otp-email" placeholder="Email" readonly />
+        <input type="text" id="otp-input" placeholder="Enter OTP" required />
+        <button type="submit">Verify OTP</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const signupForm = document.getElementById('signup-form');
+    const otpForm = document.getElementById('otp-form');
+    const signupBox = document.getElementById('signup-box');
+    const otpBox = document.getElementById('otp-box');
+    const otpEmailInput = document.getElementById('otp-email');
+
+    // Signup form submission - send signup data to backend
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!name || !email || !password) {
+        alert('Please fill in all fields.');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://127.0.0.1:1199/api/v1/auth/sign-Up', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Signup successful, show OTP form
+          otpEmailInput.value = email;
+          signupBox.style.display = 'none';
+          otpBox.style.display = 'block';
+          alert('Signup successful! Please check your email for the OTP.');
+        } else {
+          alert(data.message || 'Signup failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Signup error:', error);
+        alert('An error occurred during signup. Please try again later.');
+      }
+    });
+
+    // OTP form submission - verify OTP
+    otpForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = otpEmailInput.value.trim();
+      let otp = document.getElementById('otp-input').value.trim();
+
+      if (!otp || isNaN(otp)) {
+        alert('Please enter a valid numeric OTP.');
+        return;
+      }
+
+      otp = Number(otp);
+
+      try {
+        const response = await fetch('http://127.0.0.1:1199/api/v1/auth/otp-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.accessToken) {
+          localStorage.setItem('accessToken', data.accessToken);
+          localStorage.setItem('name', data.user.name);
+          alert('OTP verified and login successful!');
+          // Redirect or update UI after successful login, e.g.:
+          // window.location.href = '/dashboard.html';
+           alert('OTP verified and login successful!');
+      // Redirect to home.html after successful login
+      window.location.href = 'home.html';
+        } else {
+          alert(data.message || 'OTP verification failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('OTP verification error:', error);
+        alert('An error occurred during OTP verification. Please try again later.');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Artify - Fantasy Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./CSS/home.css">
+  <style>
+    .masonry-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .post-card {
+      width: 250px;
+      height: 250px;
+      position: relative;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      margin: 15px;
+      text-decoration: none;
+    }
+
+    .post-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .post-card h2 {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      margin: 0;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .footer {
+  background-color: #4b0082; /* Dark purple */
+  color: #fff;
+  padding: 40px 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.footer-logo h2 {
+  color: #dda0dd; /* Light purple */
+  margin-bottom: 10px;
+}
+
+.footer-links h3,
+.footer-social h3 {
+  margin-bottom: 10px;
+  color: #dda0dd;
+}
+
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin-bottom: 8px;
+}
+
+.footer-links a {
+  color: #ffffffcc;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #dda0dd;
+}
+
+.footer-social .social-icons a {
+  font-size: 20px;
+  color: #ffffffcc;
+  margin-right: 15px;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-social .social-icons a:hover {
+  color: #dda0dd;
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">Artify</div>
+
+    <div class="hamburger" onclick="toggleMenu()">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#categories">Categories</a></li>
+      <li><a href="/favorites.html">Favourites</a></li>
+      <li><a href="/my_posts.html">My Posts</a></li>
+      <li><a href="/contactus.html">Contact Us</a></li>
+    </ul>
+
+    <div class="right-section">
+      <a href="/login.html">Login</a>
+      <a href="/signup.html">Signup</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-banner">
+    <div class="hero-overlay">
+      <div class="hero-center-box">
+        <div class="logo-shapes">
+          <div class="triangle"></div>
+          <div class="rectangle"></div>
+          <div class="circle"></div>
+        </div>
+        <p class="school-name">THE PERFECT PLACE TO SHOW AND VIEW THE TRUE COLOURS OF LIFE!</p>
+        <h1 id="mainText" class="main-text">Welcome,</h1>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories Section -->
+  <section class="categories-section" id="categories">
+    <h2 class="section-title">Explore Categories</h2>
+    <div class="masonry-container" id="categoriesContainer"></div>
+  </section>
+
+  <!-- Add Post Section -->
+  <section class="add-post-section" id="addpost">
+    <div class="add-post-container glassy-box">
+      <h2 class="form-title">Create a New Post</h2>
+      <form id="postForm" class="post-form" enctype="multipart/form-data">
+        <label for="image">Upload Artwork</label>
+        <input type="file" id="image" name="image" accept="image/*" required />
+
+        <label for="caption">Caption</label>
+        <textarea id="caption" name="caption" placeholder="Say something about your art..." required></textarea>
+
+        <label for="category" >Choose Category</label>
+        <select id="category" name="category" required style="color: black;">
+          <option value=""></option>
+        </select>
+
+        <button type="submit" class="submit-btn">Post It</button>
+      </form>
+    </div>
+  </section>
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-logo">
+      <h2>Artify</h2>
+      <p>&copy; 2025 Artify. All rights reserved.</p>
+    </div>
+    <div class="footer-links">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-social">
+      <h3>Follow Us</h3>
+      <div class="social-icons">
+        <a href="#">🌐</a>
+        <a href="#">📘</a>
+        <a href="#">📸</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+
+  const accessToken = localStorage.getItem('accessToken');
+  const name=  localStorage.getItem("name");
+   if (name) {
+    document.getElementById("mainText").textContent = `Welcome, ${name}!`;
+  }
+const categoryId = new URLSearchParams(window.location.search).get("id");
+
+fetch(`http://127.0.0.1:1199/api/v1/post/get-posts-by-category/${categoryId}`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${accessToken}`
+  }
+})
+.then(response => response.json())
+.then(data => {
+  console.log(data);
+  // Render posts to the page
+})
+.catch(error => {
+  console.error('Error fetching posts:', error);
+});
+
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Fetch categories
+    fetch('http://127.0.0.1:1199/api/v1/category/get-all-categories',)
+      .then(response => response.json())
+      .then(result => {
+        const container = document.getElementById('categoriesContainer');
+        const dropdown = document.getElementById('category');
+
+        result.data.forEach(category => {
+          const card = document.createElement('a');
+          card.className = 'post-card';
+          card.href = `posts-category.html?id=${category._id}`;
+          card.innerHTML = `
+            <img src="${category.categoryImage || '/placeholder.jpg'}" alt="${category.categoryName}" />
+            <h2>${category.categoryName}</h2>
+          `;
+          container.appendChild(card);
+
+          const option = document.createElement('option');
+          option.value = category._id;
+          option.textContent = category.categoryName;
+          dropdown.appendChild(option);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching categories:', error);
+      });
+
+    // Handle form submission
+    const form = document.getElementById('postForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        alert("You must be logged in to post.");
+        window.location.href = "/login.html";
+        return;
+      }
+
+      const imageInput = document.getElementById('image');
+      const caption = document.getElementById('caption').value;
+      const category = document.getElementById('category').value;
+      const file = imageInput.files[0];
+
+      if (!file) {
+        alert("Please upload an image.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('caption', caption);
+      formData.append('category', category);
+
+      try {
+        const res = await fetch('http://127.0.0.1:1199/api/v1/post/create-post', {
+          method: 'POST',
+          headers: {
+            "Authorization": `Bearer ${accessToken}`
+          },
+          body: formData
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          alert("Post created successfully!");
+          form.reset();
+        } else {
+          alert("Failed to create post: " + result.message);
+        }
+      } catch (err) {
+        console.error('Error posting:', err);
+        alert("An error occurred. Check console.");
+      }
+    });
+  });
+
+  function toggleMenu() {
+    const navLinks = document.getElementById('navLinks');
+    navLinks.classList.toggle('active');
+  }
+</script>
+
+</body>
+</html>
